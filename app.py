@@ -1,63 +1,57 @@
 import streamlit as st
-from langchain_community.tools import DuckDuckGoSearchRun
+from duckduckgo_search import DDGS
 from langchain_groq import ChatGroq
 import os
 
-# --- DISEÑO NIVEL PRO ---
-st.set_page_config(page_title="Seeke AI Clone", page_icon="🚀", layout="wide")
-
-st.markdown("""
-    <style>
-    .stApp { background-color: #0d1117; color: #c9d1d9; }
-    .stTextInput input { border-radius: 10px; background-color: #161b22; color: white; border: 1px solid #30363d; }
-    .answer-box { background-color: #161b22; padding: 20px; border-radius: 15px; border: 1px solid #30363d; line-height: 1.6; }
-    </style>
-    """, unsafe_allow_html=True)
+# --- DISEÑO ---
+st.set_page_config(page_title="Seeke AI", page_icon="🚀")
 
 # --- SEGURIDAD ---
 if "GROQ_API_KEY" in st.secrets:
     os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
 else:
-    # SI PRUEBAS EN TU PC, PEGA TU LLAVE AQUÍ ABAJO:
     os.environ["GROQ_API_KEY"] = "TU_LLAVE_DE_GROQ_AQUI"
 
-st.title("🚀 Seeke AI Clone")
-st.caption("Buscador inteligente gratuito | Creado por un futuro Ingeniero")
+st.title("🚀 Seeke AI: Buscador Directo")
 
-pregunta = st.text_input("", placeholder="¿Qué quieres saber hoy?")
+query = st.text_input("¿Qué quieres investigar?", placeholder="Ej: Avances en robótica 2025")
 
-if pregunta:
-    with st.spinner("🧠 Buscando en la web y procesando con IA..."):
+if query:
+    with st.spinner("Buscando en la web..."):
         try:
-            # 1. Buscamos info (Usamos el objeto directamente para evitar el error de importación)
-            buscador = DuckDuckGoSearchRun()
-            datos_web = buscador.run(pregunta)
+            # MÉTODO DIRECTO (Sin pasar por LangChain para buscar)
+            with DDGS() as ddgs:
+                # Buscamos los 5 mejores resultados
+                search_results = [r for r in ddgs.text(query, max_results=5)]
             
-            # 2. Conectamos con la IA
-            ia = ChatGroq(model_name="llama3-8b-8192", temperature=0.2)
+            # Convertimos los resultados en un texto que la IA entienda
+            contexto = ""
+            for res in search_results:
+                contexto += f"Título: {res['title']}\nCuerpo: {res['body']}\n\n"
+
+            # CONEXIÓN CON IA
+            llm = ChatGroq(model_name="llama3-8b-8192", temperature=0.3)
             
-            instrucciones = f"""
-            Eres un buscador experto. Responde a: '{pregunta}' 
-            Usa esta información real: {datos_web}
+            prompt = f"""
+            Eres un buscador profesional. Responde a la pregunta: {query}
+            Usando esta información real encontrada en internet:
+            {contexto}
             
-            Responde con:
-            - Un resumen potente.
-            - 3 puntos clave.
-            - Una conclusión.
+            Da una respuesta estructurada y profesional.
             """
             
-            resultado = ia.invoke(instrucciones)
+            respuesta = llm.invoke(prompt)
             
-            # 3. Mostramos la respuesta
-            st.markdown("### 📝 Respuesta de la IA")
-            st.markdown(f'<div class="answer-box">{resultado.content}</div>', unsafe_allow_html=True)
+            # MOSTRAR RESULTADOS
+            st.markdown("### 📝 Resultado del Análisis")
+            st.info(respuesta.content)
             
-            with st.expander("🌐 Ver fuentes"):
-                st.write(datos_web)
+            with st.expander("🌐 Ver fuentes encontradas"):
+                for r in search_results:
+                    st.write(f"**[{r['title']}]({r['href']})**")
+                    st.write(r['body'])
+                    st.write("---")
                 
         except Exception as e:
-            st.error(f"¡Casi lo tenemos! Hubo un detalle: {e}")
-            st.info("Tip: Asegúrate de que tu llave de Groq esté bien puesta en los 'Secrets' de Streamlit.")
-
-st.markdown("---")
-st.markdown("💡 *El código es persistencia. ¡Sigue adelante!*")
+            st.error(f"Error detectado: {e}")
+            st.write("Intenta refrescar la página o revisar tu conexión.")
