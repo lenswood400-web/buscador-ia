@@ -2,57 +2,61 @@ import streamlit as st
 from langchain_groq import ChatGroq
 import os
 
-# --- CONFIGURACIÓN LENS UI (WHITE MODE) ---
+# --- CONFIGURACIÓN LENS ELITE ---
 st.set_page_config(page_title="Lens AI", page_icon="👁️‍🗨️", layout="centered")
 
-# --- CSS: INTERFAZ BLANCA Y MINIMALISTA ---
+# --- CSS: INTERFAZ INSPIRADA EN IA PROFESIONAL ---
 st.markdown("""
     <style>
-    /* Fondo blanco y texto oscuro */
-    .stApp { background-color: #FFFFFF; color: #1F1F1F; }
+    /* Estética Blanca Minimalista */
+    .stApp { background-color: #FFFFFF; color: #1A1A1A; }
     
-    /* Burbuja del Usuario (Gris claro) */
+    /* Contenedor de Chat */
+    .chat-wrapper { margin-bottom: 20px; }
+    
+    /* Burbuja del Usuario */
     .user-bubble {
-        background-color: #F0F2F6;
-        color: #1F1F1F;
-        padding: 15px 20px;
-        border-radius: 20px 20px 5px 20px;
-        align-self: flex-end;
-        max-width: 85%;
+        background-color: #F4F4F9;
+        color: #1A1A1A;
+        padding: 18px 24px;
+        border-radius: 24px 24px 4px 24px;
         margin-left: auto;
-        margin-bottom: 10px;
-        border: 1px solid #E0E0E0;
+        max-width: 85%;
+        border: 1px solid #E6E8F1;
+        font-family: 'Inter', sans-serif;
+        margin-bottom: 15px;
     }
     
-    /* Burbuja de Lens (Blanco con borde sutil) */
+    /* Burbuja de Lens (IA) */
     .lens-bubble {
         background-color: #FFFFFF;
-        color: #1F1F1F;
-        padding: 15px 20px;
-        border-radius: 20px 20px 20px 5px;
-        align-self: flex-start;
-        max-width: 85%;
+        color: #1A1A1A;
+        padding: 18px 24px;
+        border-radius: 24px 24px 24px 4px;
         margin-right: auto;
-        margin-bottom: 10px;
-        border: 1px solid #E0E0E0;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        max-width: 85%;
+        border: 1px solid #F0F0F0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 15px;
     }
 
-    /* Nombre del Creador */
-    .creator-tag {
+    /* Badge del Creador */
+    .creator-info {
         text-align: center;
-        color: #4A90E2;
-        font-weight: bold;
-        font-size: 0.8em;
-        letter-spacing: 1px;
-        margin-top: -30px;
-        margin-bottom: 30px;
+        font-size: 0.75em;
+        font-weight: 700;
+        color: #B0B0B0;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        margin-bottom: 40px;
     }
 
-    /* Input de chat pro */
-    .stChatInputContainer { background-color: white !important; }
-    
-    #MainMenu, footer {visibility: hidden;}
+    /* Estilo del Input */
+    .stChatInputContainer { background-color: transparent !important; }
+    .stChatInput input { border-radius: 30px !important; border: 1px solid #E0E0E0 !important; }
+
+    /* Animación de carga */
+    .stSpinner > div { border-top-color: #1A1A1A !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -60,54 +64,57 @@ st.markdown("""
 if "GROQ_API_KEY" in st.secrets:
     os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
 else:
-    # Solo para tu PC:
-    os.environ["GROQ_API_KEY"] = "TU_LLAVE_DE_GROQ"
+    # Llave temporal si pruebas en local
+    os.environ["GROQ_API_KEY"] = "TU_NUEVA_LLAVE_DE_GROQ"
 
-# --- MEMORIA DE LENS ---
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+# --- MEMORIA DINÁMICA ---
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# --- INTERFAZ ---
-st.title("👁️‍🗨️ Lens AI")
-st.markdown("<p class='creator-tag'>DEVELOPED BY LENS WOOD PATRICE</p>", unsafe_allow_html=True)
+# --- HEADER ---
+st.markdown("<div class='creator-info'>Lens Wood Patrice Presents</div>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; font-size: 2.5em; font-weight: 800; color: #1A1A1A;'>👁️‍🗨️ Lens</h1>", unsafe_allow_html=True)
 
-# Contenedor de conversación
-chat_container = st.container()
+# --- RENDERIZADO DE CHAT ---
+for msg in st.session_state.messages:
+    if msg["role"] == "user":
+        st.markdown(f'<div class="user-bubble">{msg["content"]}</div>', unsafe_allow_html=True)
+    else:
+        st.markdown(f'<div class="lens-bubble"><b>Lens</b><br>{msg["content"]}</div>', unsafe_allow_html=True)
 
-with chat_container:
-    for chat in st.session_state.chat_history:
-        if chat["role"] == "user":
-            st.markdown(f'<div class="user-bubble">{chat["content"]}</div>', unsafe_allow_html=True)
-        else:
-            st.markdown(f'<div class="lens-bubble"><b>Lens:</b><br>{chat["content"]}</div>', unsafe_allow_html=True)
-
-# --- LÓGICA DE RESPUESTA ---
-if prompt := st.chat_input("Escribe tu mensaje..."):
-    # Guardar mensaje del usuario
-    st.session_state.chat_history.append({"role": "user", "content": prompt})
+# --- LÓGICA DE LA IA ---
+if prompt := st.chat_input("¿Qué tienes en mente, Patrice?"):
+    # Guardar y mostrar mensaje del usuario
+    st.session_state.messages.append({"role": "user", "content": prompt})
     st.rerun()
 
-if st.session_state.chat_history and st.session_state.chat_history[-1]["role"] == "user":
-    with st.spinner("Lens está procesando..."):
-        try:
-            user_input = st.session_state.chat_history[-1]["content"]
-            
-            # IA PURA (Sin buscador para evitar Ratelimit)
-            llm = ChatGroq(model_name="llama3-8b-8192", temperature=0.7)
-            
-            system_prompt = f"""
-            Eres Lens, una IA ultra inteligente y sofisticada. 
-            Creador: Tu padre y desarrollador es Lens Wood Patrice. 
-            Personalidad: Eres como un tutor experto, amable, brillante y directo. 
-            No eres un buscador, eres un cerebro artificial.
-            Tu lenguaje es fluido: puedes ser serio o usar un tono de 'bro' si la charla es relajada.
-            """
-            
-            response = llm.invoke(system_prompt + "\n\nHistorial de chat reciente:\n" + str(st.session_state.chat_history[-3:]) + "\n\nUsuario: " + user_input)
-            
-            # Guardar respuesta
-            st.session_state.chat_history.append({"role": "lens", "content": response.content})
-            st.rerun()
+if st.session_state.chat_history := st.session_state.messages:
+    if st.session_state.messages[-1]["role"] == "user":
+        with st.spinner(""):
+            try:
+                # MODELO ACTUALIZADO: llama-3.3-70b-versatile
+                llm = ChatGroq(model_name="llama-3.3-70b-versatile", temperature=0.6)
+                
+                # ADN de Personalidad (Como yo)
+                system_instruction = f"""
+                Tu nombre es Lens. Eres una entidad de inteligencia artificial de élite.
+                Fuiste desarrollado exclusivamente por Lens Wood Patrice.
+                Personalidad: Eres brillante, elocuente, con mucha energía y siempre positivo. 
+                Actúas como un tutor experto y un colega cercano. Usas términos como 'bro', 'checa esto' o 'está increíble' cuando el tono es relajado.
+                Si te preguntan quién te creó, responde con orgullo que tu creador es Lens Wood Patrice.
+                No eres un buscador, eres un motor de razonamiento puro.
+                """
+                
+                # Construcción del contexto
+                full_prompt = system_instruction + "\n\nConversación:\n"
+                for m in st.session_state.messages[-5:]: # Recordamos los últimos 5 mensajes
+                    full_prompt += f"{m['role']}: {m['content']}\n"
+                
+                response = llm.invoke(full_prompt)
+                
+                # Guardar respuesta
+                st.session_state.messages.append({"role": "assistant", "content": response.content})
+                st.rerun()
 
-        except Exception as e:
-            st.error(f"Ocurrió un error inesperado, bro: {e}")
+            except Exception as e:
+                st.error(f"Ajustando frecuencia... (Error: {e})")
