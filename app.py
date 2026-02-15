@@ -2,8 +2,8 @@ import streamlit as st
 from duckduckgo_search import DDGS
 from langchain_groq import ChatGroq
 import os
+import time
 
-# --- DISEÑO ---
 st.set_page_config(page_title="Seeke AI", page_icon="🚀")
 
 # --- SEGURIDAD ---
@@ -12,46 +12,35 @@ if "GROQ_API_KEY" in st.secrets:
 else:
     os.environ["GROQ_API_KEY"] = "TU_LLAVE_DE_GROQ_AQUI"
 
-st.title("🚀 Seeke AI: Buscador Directo")
+st.title("🚀 Mi Buscador IA (Anti-Bloqueo)")
 
-query = st.text_input("¿Qué quieres investigar?", placeholder="Ej: Avances en robótica 2025")
+query = st.text_input("¿Qué quieres investigar?", placeholder="Escribe aquí...")
 
 if query:
-    with st.spinner("Buscando en la web..."):
+    with st.spinner("Buscando con cuidado para no ser bloqueado..."):
         try:
-            # MÉTODO DIRECTO (Sin pasar por LangChain para buscar)
+            # Esperamos 1 segundo para que DuckDuckGo no se enoje
+            time.sleep(1) 
+            
             with DDGS() as ddgs:
-                # Buscamos los 5 mejores resultados
-                search_results = [r for r in ddgs.text(query, max_results=5)]
+                # Bajamos a 3 resultados para ser más discretos
+                search_results = [r for r in ddgs.text(query, max_results=3)]
             
-            # Convertimos los resultados en un texto que la IA entienda
-            contexto = ""
-            for res in search_results:
-                contexto += f"Título: {res['title']}\nCuerpo: {res['body']}\n\n"
+            if not search_results:
+                st.warning("No encontré resultados. Intenta con otra palabra.")
+            else:
+                contexto = "\n".join([f"Título: {r['title']}\nInfo: {r['body']}" for r in search_results])
 
-            # CONEXIÓN CON IA
-            llm = ChatGroq(model_name="llama3-8b-8192", temperature=0.3)
-            
-            prompt = f"""
-            Eres un buscador profesional. Responde a la pregunta: {query}
-            Usando esta información real encontrada en internet:
-            {contexto}
-            
-            Da una respuesta estructurada y profesional.
-            """
-            
-            respuesta = llm.invoke(prompt)
-            
-            # MOSTRAR RESULTADOS
-            st.markdown("### 📝 Resultado del Análisis")
-            st.info(respuesta.content)
-            
-            with st.expander("🌐 Ver fuentes encontradas"):
-                for r in search_results:
-                    st.write(f"**[{r['title']}]({r['href']})**")
-                    st.write(r['body'])
-                    st.write("---")
+                llm = ChatGroq(model_name="llama3-8b-8192", temperature=0.3)
+                prompt = f"Eres un buscador profesional. Responde a: {query} usando: {contexto}"
                 
+                respuesta = llm.invoke(prompt)
+                
+                st.markdown("### 📝 Respuesta")
+                st.info(respuesta.content)
+
         except Exception as e:
-            st.error(f"Error detectado: {e}")
-            st.write("Intenta refrescar la página o revisar tu conexión.")
+            if "Ratelimit" in str(e):
+                st.error("⚠️ ¡DuckDuckGo nos pidió un respiro! Espera 30 segundos y vuelve a intentar.")
+            else:
+                st.error(f"Error: {e}")
