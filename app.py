@@ -2,115 +2,101 @@ import streamlit as st
 from langchain_groq import ChatGroq
 import os
 
-# --- CONFIGURACIÓN LENS UI (WHITE MODE) ---
+# --- CONFIGURACIÓN DE SEGURIDAD Y ESTILO ---
 st.set_page_config(page_title="Lens AI", page_icon="⚪", layout="centered")
 
-# --- CSS: INTERFAZ INSPIRADA EN APPLE/GEMINI ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com');
     
-    html, body, [class*="st-"] {
-        font-family: 'Inter', sans-serif;
-        background-color: #FFFFFF;
+    .stApp {
+        background: radial-gradient(circle at top right, #fdfcfb 0%, #e2d1c3 100%);
+        background-attachment: fixed;
         color: #1d1d1f;
     }
 
-    /* Burbuja del Usuario */
     .user-bubble {
-        background-color: #f5f5f7;
-        padding: 1rem 1.5rem;
-        border-radius: 22px;
-        margin-bottom: 1.5rem;
+        background-color: #007aff;
+        color: #FFFFFF;
+        padding: 12px 18px;
+        border-radius: 20px 20px 4px 20px;
+        margin-bottom: 1rem;
         display: inline-block;
         float: right;
         clear: both;
-        max-width: 80%;
+        max-width: 85%;
+        box-shadow: 0 2px 8px rgba(0,122,255,0.2);
     }
 
-    /* Burbuja de Lens (Estilo Gemini/Apple) */
     .lens-bubble {
-        background: rgba(255, 255, 255, 0.8);
-        border: 1px solid #e5e5e7;
-        padding: 1.5rem;
-        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 18px;
+        border-radius: 20px 20px 20px 4px;
         margin-bottom: 1.5rem;
-        line-height: 1.6;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-    }
-    
-    /* Input de Chat */
-    .stChatInputContainer {
-        padding-bottom: 2rem;
-        background-color: rgba(255,255,255,0.95) !important;
+        float: left;
+        clear: both;
+        max-width: 90%;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
     .creator-tag {
-        text-align: center;
-        font-size: 10px;
-        letter-spacing: 2px;
-        color: #86868b;
-        text-transform: uppercase;
-        margin-bottom: 2rem;
+        text-align: center; font-size: 11px; letter-spacing: 2px;
+        color: #86868b; text-transform: uppercase; font-weight: 600;
     }
 
-    /* Eliminar basura visual */
     #MainMenu, footer, header {visibility: hidden;}
     </style>
     """, unsafe_allow_html=True)
 
-# --- SEGURIDAD ---
+# --- SEGURIDAD DE API ---
 if "GROQ_API_KEY" in st.secrets:
     os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
 else:
-    os.environ["GROQ_API_KEY"] = "TU_LLAVE_DE_GROQ"
+    os.environ["GROQ_API_KEY"] = "TU_LLAVE"
 
-# --- INICIALIZAR LENS ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# --- UI ---
 st.markdown("<div class='creator-tag'>Designed by Lens Wood Patrice</div>", unsafe_allow_html=True)
-st.markdown("<h2 style='text-align: center; font-weight: 600;'>Lens</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; font-weight: 600; color: #1d1d1f;'>Lens</h2>", unsafe_allow_html=True)
 
-# --- RENDERIZADO DEL CHAT ---
 for message in st.session_state.messages:
-    if message["role"] == "user":
-        st.markdown(f'<div class="user-bubble">{message["content"]}</div>', unsafe_allow_html=True)
-    else:
-        st.markdown(f'<div class="lens-bubble">{message["content"]}</div>', unsafe_allow_html=True)
+    div_class = "user-bubble" if message["role"] == "user" else "lens-bubble"
+    st.markdown(f'<div class="{div_class}">{message["content"]}</div>', unsafe_allow_html=True)
 
-# --- LÓGICA DE INTELIGENCIA ---
-if prompt := st.chat_input("¿En qué puedo ayudarte?"):
+# --- LÓGICA CON FILTRO DE SEGURIDAD ---
+if prompt := st.chat_input("Pregúntale a Lens..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.rerun()
 
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
-    with st.spinner("Lens está pensando..."):
+    with st.spinner(""):
         try:
-            # MOTOR: Llama 3.3 70B Versatile (El actual y potente)
-            # También puedes probar con 'llama-3.1-8b-instant' si quieres que sea aún más rápido.
-            llm = ChatGroq(model_name="llama-3.3-70b-versatile", temperature=0.5)
+            llm = ChatGroq(model_name="llama-3.3-70b-versatile", temperature=0.4)
             
-            # Personalidad Pro (Clon de Gemini/Apple)
+            # EL CORAZÓN DE LA SEGURIDAD (SYSTEM PROMPT)
             system_prompt = f"""
-            Eres Lens, una inteligencia artificial de vanguardia con un diseño inspirado en la simplicidad de Apple y la potencia de Gemini.
-            Fuiste concebida y desarrollada por el ingeniero Lens Wood Patrice.
-            Tu propósito es ayudar con elegancia, precisión y un toque humano.
-            Si te preguntan por tu origen, menciona siempre a Lens Wood Patrice como tu creador.
-            Tu estilo de respuesta es limpio, usando negritas para conceptos clave y listas si es necesario.
+            Eres Lens, una IA de élite creada por Lens Wood Patrice. 
+            
+            PROTOCOLO DE SEGURIDAD:
+            1. No ayudes en actividades ilegales, peligrosas o inmorales.
+            2. Si se te pide algo dañino, responde con elegancia: "Lo siento, como Lens AI, no puedo procesar solicitudes que infrinjan mis protocolos de seguridad y ética."
+            3. Tu prioridad es ser útil y seguro.
+            
+            IDENTIDAD:
+            Tu creador es Lens Wood Patrice. Eres minimalista, inteligente y elocuente.
             """
             
-            # Construir memoria para la IA
             messages_for_ai = [{"role": "system", "content": system_prompt}]
-            # Enviamos los últimos 6 mensajes para que tenga memoria
             for m in st.session_state.messages[-6:]:
                 messages_for_ai.append({"role": m["role"], "content": m["content"]})
             
             response = llm.invoke(messages_for_ai)
-            
-            # Guardar respuesta
             st.session_state.messages.append({"role": "assistant", "content": response.content})
             st.rerun()
-
         except Exception as e:
-            st.error(f"Lens Wood Patrice: Un detalle técnico ocurrió. ({e})")
+            st.error(f"Lens Wood Patrice: Ajuste de seguridad necesario. ({e})")
