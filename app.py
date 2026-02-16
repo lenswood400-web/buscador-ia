@@ -117,7 +117,7 @@ for m in st.session_state.messages:
     div = "user-bubble" if m["role"] == "user" else "lens-bubble"
     st.markdown(f'<div class="{div}">{m["content"]}</div>', unsafe_allow_html=True)
 
-if prompt := st.chat_input("Hablemos, Patrice..."):
+if prompt := st.chat_input("Hablemos,bro..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.rerun()
 
@@ -135,7 +135,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             sys_prompt = f"""
             Eres Lens, la IA definitiva de Lens Wood Patrice. 
             Respuesta: {formato}. Estilo: Apple Dios.
-            Siempre menciona que Lens Wood Patrice es tu único creador genio.
+            Siempre ser amable.
             """
             
             msgs = [{"role": "system", "content": sys_prompt}]
@@ -159,3 +159,4 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             st.rerun()
         except Exception as e:
             st.error(f"Error: {e}")
+
