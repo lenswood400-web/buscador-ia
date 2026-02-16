@@ -1,63 +1,55 @@
 import streamlit as st
 from langchain_groq import ChatGroq
-import os, time, random
+import os, time
 
-# --- CONFIGURACIÓN SUPREMA ---
+# --- CONFIGURACIÓN DE ÉLITE ---
 st.set_page_config(page_title="Lens AI", page_icon="⚪", layout="centered")
 
-# --- CSS & JS: APPLE OMNIPOTENCE DESIGN ---
+# --- CSS & JS: APPLE PURE DESIGN ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com');
     .stApp { background: #FFFFFF; }
 
-    /* Animación de Entrada Escalonada para Sugerencias */
+    /* Animación de Entrada para Sugerencias */
     @keyframes fadeInUp {
-        0% { opacity: 0; transform: translateY(20px); }
+        0% { opacity: 0; transform: translateY(15px); }
         100% { opacity: 1; transform: translateY(0); }
     }
 
+    /* Botones de Sugerencia Estilo Apple */
     .stButton>button {
-        border-radius: 25px; border: 1px solid #e5e5ea;
-        background: rgba(242, 242, 247, 0.5);
-        color: #1d1d1f; font-size: 14px; font-weight: 500;
-        padding: 12px 20px; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-        animation: fadeInUp 0.8s backwards;
-        width: 100%;
+        border-radius: 20px; border: 1px solid #e5e5ea;
+        background: #fbfbfd; color: #1d1d1f; font-size: 14px;
+        padding: 10px 15px; transition: 0.3s all cubic-bezier(0.4, 0, 0.2, 1);
+        animation: fadeInUp 0.6s ease-out; width: 100%;
     }
     .stButton>button:hover {
-        background: #007aff; color: white;
-        transform: scale(1.05) translateY(-3px);
-        box-shadow: 0 10px 20px rgba(0, 122, 255, 0.15);
+        background: #007aff; color: white; border-color: #007aff;
+        transform: scale(1.02);
     }
 
-    /* Burbujas Estilo Apple Vision Pro */
+    /* Burbujas de Chat */
     .user-bubble {
         background: #007aff; color: white; padding: 14px 22px; 
-        border-radius: 22px 22px 5px 22px; margin-bottom: 1.2rem; 
-        float: right; clear: both; max-width: 82%;
-        box-shadow: 0 4px 15px rgba(0, 122, 255, 0.15);
+        border-radius: 22px 22px 5px 22px; margin-bottom: 1rem; 
+        float: right; clear: both; max-width: 85%;
         animation: fadeInUp 0.4s ease-out;
     }
 
     .lens-bubble {
         background: #f2f2f7; border: 1px solid #e5e5ea;
-        padding: 22px; border-radius: 22px 22px 22px 5px;
-        margin-bottom: 1.8rem; float: left; clear: both; 
-        max-width: 88%; line-height: 1.6; color: #1d1d1f;
-        animation: fadeInUp 0.6s ease-out;
+        padding: 20px; border-radius: 22px 22px 22px 5px;
+        margin-bottom: 1.5rem; float: left; clear: both; 
+        max-width: 88%; line-height: 1.6;
+        animation: fadeInUp 0.5s ease-out;
     }
 
-    /* Centro de Control */
-    [data-testid="stSidebar"] {
-        background: rgba(255,255,255,0.7) !important;
-        backdrop-filter: blur(30px);
-    }
-
+    /* Creator Tag */
     .creator-tag {
-        text-align: center; font-size: 10px; letter-spacing: 5px;
-        font-weight: 800; text-transform: uppercase; color: #aeaeb2;
-        margin-bottom: 40px;
+        text-align: center; font-size: 10px; letter-spacing: 4px;
+        font-weight: 800; color: #aeaeb2; text-transform: uppercase;
+        margin-top: -30px; margin-bottom: 30px;
     }
 
     #MainMenu, footer, header { visibility: hidden; }
@@ -76,49 +68,48 @@ st.markdown("""
 # --- PANEL DE CONTROL ---
 with st.sidebar:
     st.markdown("### ⚙️ LENS OMNI")
-    st.write("Control de Misión")
+    st.write("Control de Sistemas")
     st.write("---")
-    modo = st.radio("Cerebro Principal:", ["Investigación", "Traducción", "Matemáticas"])
-    metas = st.toggle("Seguimiento de Metas Diarias", value=True)
+    modo = st.radio("Cerebro:", ["Investigación", "Traducción", "Matemáticas"])
     enfoque = st.toggle("Enfoque Profundo (Dios)", value=False)
-    if st.button("🗑️ Limpiar Memoria"):
+    if st.button("🗑️ Reset Matrix"):
         st.session_state.messages = []
         st.rerun()
 
-# --- LÓGICA DE MENSAJES ---
+# --- LÓGICA DE MEMORIA ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-st.markdown("<div class='creator-tag'>Developed by Lens Wood Patrice</div>", unsafe_allow_html=True)
+st.markdown("<div class='creator-tag'>Designed by Lens Wood Patrice</div>", unsafe_allow_html=True)
 st.markdown("<h1 style='text-align: center; font-weight: 700; font-size: 2.5rem; letter-spacing: -2px;'>Lens</h1>", unsafe_allow_html=True)
 
-# --- SUGERENCIAS INTELIGENTES (CON ANIMACIÓN) ---
+# --- SUGERENCIAS FIJAS (SIN BUGS) ---
 if not st.session_state.messages:
     st.markdown("<p style='text-align: center; color: #8e8e93; font-size: 14px;'>Sugerencias Inteligentes</p>", unsafe_allow_html=True)
     
-    # Pool de preguntas de IA real
-    pool = [
-        "¿Cómo afectará la IA al 2030?", "Explícame la teoría de cuerdas",
-        "Traduce 'Éxito' a 5 idiomas", "Calcula la órbita de Marte",
-        "Escribe un código en Python pro", "¿Quién es Lens Wood Patrice?",
-        "Crea una rutina de estudio elite", "Dime un dato del espacio"
-    ]
-    random_sug = random.sample(pool, 4)
-    
+    # Lista fija para evitar errores de renderizado
     c1, c2 = st.columns(2)
     with c1:
-        if st.button(random_sug[0]): st.session_state.messages.append({"role":"user","content":random_sug[0]}); st.rerun()
-        if st.button(random_sug[1]): st.session_state.messages.append({"role":"user","content":random_sug[1]}); st.rerun()
+        if st.button("🌌 ¿Cómo será el futuro en 2050?"):
+            st.session_state.messages.append({"role": "user", "content": "¿Cómo será el futuro tecnológico en 2050?"})
+            st.rerun()
+        if st.button("🧠 Explícame la IA cuántica"):
+            st.session_state.messages.append({"role": "user", "content": "Explícame qué es la IA cuántica de forma pro."})
+            st.rerun()
     with c2:
-        if st.button(random_sug[2]): st.session_state.messages.append({"role":"user","content":random_sug[2]}); st.rerun()
-        if st.button(random_sug[3]): st.session_state.messages.append({"role":"user","content":random_sug[3]}); st.rerun()
+        if st.button("⚡ Plan de éxito a los 16 años"):
+            st.session_state.messages.append({"role": "user", "content": "Dame un plan de éxito nivel Dios para alguien de 16 años."})
+            st.rerun()
+        if st.button("🌍 Traduce 'Libertad' a 5 idiomas"):
+            st.session_state.messages.append({"role": "user", "content": "Traduce 'Libertad' a 5 idiomas diferentes de forma elegante."})
+            st.rerun()
 
 # --- RENDER CHAT ---
 for m in st.session_state.messages:
     div = "user-bubble" if m["role"] == "user" else "lens-bubble"
     st.markdown(f'<div class="{div}">{m["content"]}</div>', unsafe_allow_html=True)
 
-if prompt := st.chat_input("¿Qué descubriremos hoy?"):
+if prompt := st.chat_input("Hablemos, Patrice..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.rerun()
 
@@ -128,13 +119,12 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
         try:
             llm = ChatGroq(model_name="llama-3.3-70b-versatile", temperature=0.6)
             
-            tipo = "experto en investigación" if modo == "Investigación" else "traductor políglota" if modo == "Traducción" else "matemático puro"
-            meta_txt = "Ayuda al usuario a cumplir sus metas diarias de forma motivadora." if metas else ""
-            deep_txt = "Analiza paso a paso con máxima profundidad." if enfoque else "Sé directo y elegante."
+            tipo = "investigador" if modo == "Investigación" else "traductor" if modo == "Traducción" else "matemático"
+            enfoque_txt = "Analiza con máxima profundidad nivel Dios." if enfoque else "Sé directo y elegante."
 
             sys_prompt = f"""
             Eres Lens, una IA nivel Dios diseñada por Lens Wood Patrice.
-            Misión: Eres un {tipo}. {meta_txt} {deep_txt}
+            Misión: Eres un {tipo} experto. {enfoque_txt}
             
             IDENTIDAD: Solo menciona a Lens Wood Patrice si el usuario lo pregunta. 
             Él es tu arquitecto genio. Responde con estilo Apple Pro.
@@ -146,7 +136,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             
             response = llm.invoke(msgs)
             
-            # Animación de Escritura Palabra por Palabra
+            # Animación de Escritura Pro
             res_txt = response.content
             placeholder = st.empty()
             curr = ""
@@ -158,4 +148,4 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             st.session_state.messages.append({"role": "assistant", "content": res_txt})
             st.rerun()
         except Exception as e:
-            st.error(f"Sistema en mantenimiento: {e}")
+            st.error(f"Sistema saturado: {e}")
