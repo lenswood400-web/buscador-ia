@@ -2,10 +2,10 @@ import streamlit as st
 from langchain_groq import ChatGroq
 import os, time
 
-
+# --- CONFIGURACIÓN DE ÉLITE ---
 st.set_page_config(page_title="Lens AI", page_icon="⚪", layout="centered")
 
-
+# --- CSS & JS: MOTOR DE ANIMACIÓN APPLE ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com');
@@ -62,7 +62,7 @@ st.markdown("""
     </script>
     """, unsafe_allow_html=True)
 
-
+# --- PANEL DE CONTROL ---
 with st.sidebar:
     st.markdown("### ⚙️ LENS CONTROL")
     st.markdown(f"**Arquitecto:** \nLens Wood Patrice")
@@ -72,18 +72,18 @@ with st.sidebar:
         st.session_state.messages = []
         st.rerun()
 
-
+# --- MEMORIA ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 st.markdown("<div class='creator-tag'>Designed by Lens Wood Patrice</div>", unsafe_allow_html=True)
 st.markdown("<h1 style='text-align: center; font-weight: 700; font-size: 2.5rem;'>Lens</h1>", unsafe_allow_html=True)
 
--
+# --- SUGERENCIAS GEEK (IA Real) ---
 if not st.session_state.messages:
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("🎮 Mejores juegos 2026"):
+        if st.button("🎮 Mejores juegos 2025"):
             st.session_state.messages.append({"role": "user", "content": "Dime cuáles son los juegos más esperados o mejores de 2025."})
             st.rerun()
         if st.button("⛩️ Anime nivel Dios"):
@@ -97,7 +97,7 @@ if not st.session_state.messages:
             st.session_state.messages.append({"role": "user", "content": "Actúa como mi traductor políglota experto."})
             st.rerun()
 
-
+# --- CHAT ENGINE ---
 for m in st.session_state.messages:
     div = "user-bubble" if m["role"] == "user" else "lens-bubble"
     st.markdown(f'<div class="{div}">{m["content"]}</div>', unsafe_allow_html=True)
@@ -106,13 +106,13 @@ if prompt := st.chat_input("Hablemos, Patrice..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.rerun()
 
-
+# --- LENS INTELLIGENCE ---
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.spinner(""):
         try:
             llm = ChatGroq(model_name="llama-3.3-70b-versatile", temperature=0.7)
             
-           
+            # Instrucciones Geek y de Identidad
             sys_prompt = f"""
             Eres Lens, una IA nivel Dios diseñada por Lens Wood Patrice.
             CONOCIMIENTOS: Eres un experto total en Anime (desde clásicos hasta estrenos), Videojuegos (Lore, gameplay, industria) y Cultura Pop.
@@ -128,7 +128,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             response = llm.invoke(msgs)
             res_txt = response.content
 
-            
+            # --- ANIMACIÓN DE ESCRITURA SEGURA (TYPEWRITER) ---
             placeholder = st.empty()
             curr = ""
             for word in res_txt.split():
