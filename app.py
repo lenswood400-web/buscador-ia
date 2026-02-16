@@ -2,21 +2,16 @@ import streamlit as st
 from langchain_groq import ChatGroq
 import os, time, random
 
-# --- CONFIGURACIÓN DE NIVEL DIOS ---
+# --- CONFIGURACIÓN DE ÉLITE ---
 st.set_page_config(page_title="Lens AI", page_icon="⚪", layout="centered")
 
-# --- CSS & JS: APPLE MINIMALISM ---
+# --- CSS & JS: APPLE SEQUOIA DESIGN ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com');
     .stApp { background: #FFFFFF; }
 
-    /* Animaciones de Seda */
-    @keyframes appleFade {
-        0% { opacity: 0; transform: translateY(20px) scale(0.98); }
-        100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
+    /* Burbujas Estilo Mensajes de Apple */
     .user-bubble {
         background: #007aff; color: white; padding: 14px 22px; 
         border-radius: 22px 22px 5px 22px; margin-bottom: 1.2rem; 
@@ -33,17 +28,21 @@ st.markdown("""
         animation: appleFade 0.6s ease-out;
     }
 
-    /* Sugerencias Estilo Meta */
-    .stButton>button {
-        border-radius: 25px; border: 1px solid #d2d2d7; background: white;
-        padding: 10px 20px; font-weight: 500; transition: 0.3s;
+    @keyframes appleFade {
+        0% { opacity: 0; transform: translateY(15px); }
+        100% { opacity: 1; transform: translateY(0); }
     }
-    .stButton>button:hover { border-color: #007aff; color: #007aff; transform: translateY(-2px); }
+
+    /* Centro de Control Glassmorphism */
+    [data-testid="stSidebar"] {
+        background: rgba(255,255,255,0.6) !important;
+        backdrop-filter: blur(25px);
+    }
 
     .creator-tag {
-        text-align: center; font-size: 10px; letter-spacing: 4px;
-        font-weight: 800; text-transform: uppercase; color: #8e8e93;
-        margin-bottom: 5px;
+        text-align: center; font-size: 10px; letter-spacing: 5px;
+        font-weight: 800; text-transform: uppercase; color: #aeaeb2;
+        margin-top: -40px; margin-bottom: 40px;
     }
 
     #MainMenu, footer, header { visibility: hidden; }
@@ -61,76 +60,82 @@ st.markdown("""
 
 # --- PANEL DE CONTROL ---
 with st.sidebar:
-    st.markdown("### ⚙️ LENS SETTINGS")
-    st.caption("Arquitectura: Llama 3.3")
+    st.markdown("### ⚙️ LENS OMNI")
+    st.write("Configuración de Alto Nivel")
     st.write("---")
-    longitud = st.radio("Respuesta:", ["Concisa ⚡", "Nivel Dios 🧠"])
-    temperatura = st.slider("Creatividad:", 0.0, 1.2, 0.7)
-    if st.button("♻️ Reset Chat"):
+    modo = st.radio("Función Principal:", ["Inteligencia General", "Traductor Pro", "Cálculo Experto"])
+    enfoque = st.toggle("Modo Enfoque Profundo (Chain of Thought)", value=False)
+    longitud = st.select_slider("Densidad:", ["Flash ⚡", "Normal", "Dios 🧠"])
+    if st.button("🗑️ Reset Sistema"):
         st.session_state.messages = []
         st.rerun()
 
-# --- MEMORIA ---
+# --- LÓGICA DE MEMORIA ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-st.markdown("<div class='creator-tag'>Designed in Chile</div>", unsafe_allow_html=True)
-st.markdown("<h1 style='text-align: center; font-weight: 700; font-size: 2.2rem;'>Lens</h1>", unsafe_allow_html=True)
+st.markdown("<div class='creator-tag'>Visionary Architecture</div>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; font-weight: 700; font-size: 2.5rem; letter-spacing: -1.5px;'>Lens</h1>", unsafe_allow_html=True)
 
 # --- SUGERENCIAS ---
 if not st.session_state.messages:
-    pool = ["¿Quién te creó?", "Dime algo nivel Dios", "Plan de éxito personal", "¿Cómo funciona la IA?"]
+    pool = ["¿Quién te creó?", "Traduce 'Hola mundo' al Japonés", "Calcula la raíz de 144", "Dime algo pro"]
     c1, c2 = st.columns(2)
     if c1.button(pool[0]): st.session_state.messages.append({"role":"user","content":pool[0]}); st.rerun()
     if c1.button(pool[1]): st.session_state.messages.append({"role":"user","content":pool[1]}); st.rerun()
     if c2.button(pool[2]): st.session_state.messages.append({"role":"user","content":pool[2]}); st.rerun()
     if c2.button(pool[3]): st.session_state.messages.append({"role":"user","content":pool[3]}); st.rerun()
 
-# --- RENDER ---
+# --- RENDER CHAT ---
 for m in st.session_state.messages:
     div = "user-bubble" if m["role"] == "user" else "lens-bubble"
     st.markdown(f'<div class="{div}">{m["content"]}</div>', unsafe_allow_html=True)
 
-if prompt := st.chat_input("Escribe aquí..."):
+if prompt := st.chat_input("Hablemos, Patrice..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.rerun()
 
-# --- MOTOR LENS (Protocolo Silencioso) ---
+# --- MOTOR LENS OMNI ---
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.spinner(""):
         try:
-            llm = ChatGroq(model_name="llama-3.3-70b-versatile", temperature=temperatura)
+            llm = ChatGroq(model_name="llama-3.3-70b-versatile", temperature=0.6)
             
-            formato = "Muy corta." if longitud == "Concisa ⚡" else "Maestral y detallada."
+            # Ajuste de comportamiento
+            inst_modo = "Eres un traductor perfecto." if modo == "Traductor Pro" else \
+                        "Eres un experto en matemáticas y lógica." if modo == "Cálculo Experto" else \
+                        "Eres un asistente de inteligencia general."
             
-            # EL CAMBIO CLAVE: Solo menciona al creador si se pregunta
+            densidad = "Responde en máximo 1 frase." if longitud == "Flash ⚡" else \
+                       "Responde con profundidad nivel Dios." if longitud == "Dios 🧠" else ""
+            
+            enfoque_txt = "PIENSA PASO A PASO antes de responder." if enfoque else ""
+
             sys_prompt = f"""
-            Eres Lens, una IA de vanguardia. 
-            Respuesta: {formato}. Estilo: Apple Pro.
+            Eres Lens, una IA nivel Dios diseñada por Lens Wood Patrice.
+            Misión: {inst_modo}. 
+            Restricción: {densidad}. {enfoque_txt}
             
-            REGLA DE IDENTIDAD: 
-            Tu creador es Lens Wood Patrice. 
-            NO menciones a tu creador a menos que el usuario te lo pregunte explícitamente.
-            Si te preguntan quién te hizo, responde con orgullo que fue Lens Wood Patrice.
-            De lo contrario, enfócate solo en ayudar al usuario con brillantez.
+            IDENTIDAD: Solo menciona a Lens Wood Patrice si el usuario lo pregunta. 
+            Él es tu arquitecto genio. Responde con estilo Apple Pro.
             """
             
             msgs = [{"role": "system", "content": sys_prompt}]
-            for m in st.session_state.messages[-10:]:
+            for m in st.session_state.messages[-8:]:
                 msgs.append({"role": m["role"], "content": m["content"]})
             
             response = llm.invoke(msgs)
             
-            # Efecto de escritura suave
-            full_res = response.content
+            # Animación de Escritura
+            res_txt = response.content
             placeholder = st.empty()
             curr = ""
-            for word in full_res.split():
+            for word in res_txt.split():
                 curr += word + " "
                 placeholder.markdown(f'<div class="lens-bubble">{curr}</div>', unsafe_allow_html=True)
                 time.sleep(0.04)
             
-            st.session_state.messages.append({"role": "assistant", "content": full_res})
+            st.session_state.messages.append({"role": "assistant", "content": res_txt})
             st.rerun()
         except Exception as e:
-            st.error(f"Error: {e}")
+            st.error(f"Error técnico: {e}")
